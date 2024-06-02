@@ -59,7 +59,7 @@ type sceVu0FVECTOR = record
 end;
 
 type Ticon_sys = record
-	header : array[0..3] of char;
+	header : array[0..3] of AnsiChar;
 	reserved : word;
 	titleBreak : word;
 	reserved2 : integer;
@@ -213,12 +213,12 @@ begin
 	  $27 : result := $AD81;
 	  $28 : result := $6981;
 	  $29 : result := $6A81;
-	  $2A : result := $4081; //banned char, return a space
+	  $2A : result := $9681; //Added "*"
 	  $2B : result := $7B81;
 	  $2C : result := $4181;
 	  $2D : result := $7C81;
-	  $2E : result := $4281;
-	  $2F : result := $4081; //banned char, return a space
+	  $2E : result := $4481; //Fixed "."
+	  $2F : result := $5E81; //Added "/"
 	  $30 : result := $4F82;
 	  $31 : result := $5082;
 	  $32 : result := $5182;
@@ -234,7 +234,7 @@ begin
 	  $3C : result := $8381;
 	  $3D : result := $8181;
 	  $3E : result := $8481;
-	  $3F : result := $4081; //banned char, return a space
+	  $3F : result := $4881; //Added "?"
 	  $40 : result := $9781;
 	  $41 : result := $6082;
 	  $42 : result := $6182;
@@ -337,7 +337,7 @@ end;
 procedure TMaxSave.buildHeader;
 begin
   maxHeader.magic := 'Ps2PowerSave';
-  maxHeader.compressedSize := compressedClump.Size;
+  maxHeader.compressedSize := compressedClump.Size + 4;
   maxHeader.origSize := clump.Size;
   //origSize := clump.Size;
   maxHeader.numFiles := files.Count;
@@ -350,7 +350,7 @@ begin
   	StrPCopy(maxHeader.iconSysName, getIcon_SysName);
 		//maxHeader.iconSysName := getIcon_SysName;
   end else begin
-  	maxHeader.iconSysName := 'New File';	
+  	maxHeader.iconSysName := 'New File';
   end;
 end;
 
@@ -771,10 +771,13 @@ begin
 	  $AD81 : result := Char($27);
 	  $6981 : result := Char($28);
 	  $6A81 : result := Char($29);
+    $9681 : result := Char($2A); //Added "*"
 	  $7B81 : result := Char($2B);
 	  $4181 : result := Char($2C);
 	  $7C81 : result := Char($2D);
 	  $4281 : result := Char($2E);
+    $4481 : result := Char($2E); //Added "."
+    $5E81 : result := Char($2F); //Added "/"
 	  $4F82 : result := Char($30);
 	  $5082 : result := Char($31);
 	  $5182 : result := Char($32);
@@ -855,7 +858,8 @@ begin
 	  $6081 : result := Char($7E);
 	  $0000 : result := Char($00);
 	  $0081 : result := Char($20); //bug fix for faulty PS2 Save Builder made/edited icon.sys files
-    $3F82 : result := char($20); //bug fix for faulty mcIconSysGen made 
+    	  $3F82 : result := char($20); //bug fix for faulty mcIconSysGen made
+    	  $3F81 : result := char($20); //bug fix
     //icon.sys files
     else result := '?';
   end;
@@ -972,4 +976,3 @@ begin
 end;
 
 end.
-	
