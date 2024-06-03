@@ -861,7 +861,7 @@ begin
     	  $3F82 : result := char($20); //bug fix for faulty mcIconSysGen made
     	  $3F81 : result := char($20); //bug fix
     //icon.sys files
-    else result := '?';
+    else result := char($00);
   end;
 end;
 
