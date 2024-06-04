@@ -19,6 +19,7 @@ myLZAri, classes, sysUtils, strUtils, dialogs;
 
 type
  nameArray = array[0..31] of AnsiChar;
+ iconArray = array[0..33] of AnsiChar;
 
 type
 TMaxheader = record
@@ -102,13 +103,13 @@ type
       procedure buildClump;
       procedure buildHeader;
       procedure updateChecksum;
-      function getIcon_SysName : TBytes;
+      function getIcon_SysName : iconArray;
       function CalculateCRCFromStream(aStream: TStream): Cardinal;
     protected
       files : Tlist; //list of all the files (inc data)
       function cleanString (input : string): string;
       function asciiToShiftJis(input : char) : word;
-      function ShiftJistoAscii(input : word) : char;
+      function ShiftJistoAscii(input : word) : AnsiChar;
     public
       procedure loadSave(fileName : string);
       //function ListFiles;
@@ -352,7 +353,7 @@ begin
     fillchar(maxHeader.iconSysName, 32, $0); //ensure remaining space is blank
     //StrPCopy(maxHeader.iconSysName, getIcon_SysName);
     for a := 0 to 31 do begin
-    maxHeader.iconSysName[a] := AnsiChar(getIcon_SysName[a]);
+    maxHeader.iconSysName[a] := getIcon_SysName[a];
     end;
   end else begin
     maxHeader.iconSysName := 'New File';
@@ -655,14 +656,13 @@ begin
   result := temp;
 end;
 
-function TMaxsave.getIcon_SysName : TBytes;
+function TMaxsave.getIcon_SysName : iconArray;
 var
   iconFile: TIcon_Sys;
   a : integer;
   aFile : PFileDetails;
-  buffer : TBytes;
+  buffer : iconArray;
 begin
-  SetLength(buffer, 34);
   for a := 0 to files.count - 1 do begin
     aFile := files.items[a];
     if aFile^.name = 'icon.sys' then begin
@@ -671,7 +671,7 @@ begin
     end;
   end;
   for a := 0 to 33 do begin
-    buffer[a] := Byte(ShiftJistoAscii(iconFile.titleName[a]));
+    buffer[a] := ShiftJistoAscii(iconFile.titleName[a]);
   end;
   result := buffer;
 end;
@@ -761,7 +761,7 @@ begin
 	//maxHeader.dirName := dirName;
 end;
 
-function TMaxSave.ShiftJistoAscii(input: word): char;
+function TMaxSave.ShiftJistoAscii(input: word): AnsiChar;
 begin
   case input of
 //SJIS bytes are reversed, this was cheaper than a byteswap.
