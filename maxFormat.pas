@@ -102,7 +102,7 @@ type
       procedure buildClump;
       procedure buildHeader;
       procedure updateChecksum;
-      function getIcon_SysName : string;
+      function getIcon_SysName : TBytes;
       function CalculateCRCFromStream(aStream: TStream): Cardinal;
     protected
       files : Tlist; //list of all the files (inc data)
@@ -335,7 +335,10 @@ begin
 end;
 
 procedure TMaxSave.buildHeader;
+var
+  a : integer;
 begin
+  a := 0;
   maxHeader.magic := 'Ps2PowerSave';
   maxHeader.compressedSize := compressedClump.Size + 4;
   maxHeader.origSize := clump.Size;
@@ -343,14 +346,16 @@ begin
   maxHeader.numFiles := files.Count;
   maxHeader.checksum := 0;
   if maxHeader.dirName = '' then begin
-  	maxHeader.dirName := 'New Directory';
+    maxHeader.dirName := 'New Directory';
   end;
   if fileExists('icon.sys') then begin
     fillchar(maxHeader.iconSysName, 32, $0); //ensure remaining space is blank
-  	StrPCopy(maxHeader.iconSysName, getIcon_SysName);
-		//maxHeader.iconSysName := getIcon_SysName;
+    //StrPCopy(maxHeader.iconSysName, getIcon_SysName);
+    for a := 0 to 31 do begin
+    maxHeader.iconSysName[a] := AnsiChar(getIcon_SysName[a]);
+    end;
   end else begin
-  	maxHeader.iconSysName := 'New File';
+    maxHeader.iconSysName := 'New File';
   end;
 end;
 
@@ -650,14 +655,14 @@ begin
   result := temp;
 end;
 
-function TMaxsave.getIcon_SysName : string;
+function TMaxsave.getIcon_SysName : TBytes;
 var
   iconFile: TIcon_Sys;
   a : integer;
   aFile : PFileDetails;
-  buffer : string;
+  buffer : TBytes;
 begin
-  buffer := '';
+  SetLength(buffer, 34);
   for a := 0 to files.count - 1 do begin
     aFile := files.items[a];
     if aFile^.name = 'icon.sys' then begin
@@ -666,7 +671,7 @@ begin
     end;
   end;
   for a := 0 to 33 do begin
-    buffer := buffer + ShiftJistoAscii(iconFile.titleName[a]);
+    buffer[a] := Byte(ShiftJistoAscii(iconFile.titleName[a]));
   end;
   result := buffer;
 end;
@@ -771,13 +776,13 @@ begin
 	  $AD81 : result := Char($27);
 	  $6981 : result := Char($28);
 	  $6A81 : result := Char($29);
-    $9681 : result := Char($2A); //Added "*"
+	  $9681 : result := Char($2A); //Added "*"
 	  $7B81 : result := Char($2B);
 	  $4181 : result := Char($2C);
 	  $7C81 : result := Char($2D);
 	  $4281 : result := Char($2E);
-    $4481 : result := Char($2E); //Added "."
-    $5E81 : result := Char($2F); //Added "/"
+	  $4481 : result := Char($2E); //Added "."
+	  $5E81 : result := Char($2F); //Added "/"
 	  $4F82 : result := Char($30);
 	  $5082 : result := Char($31);
 	  $5182 : result := Char($32);
@@ -856,7 +861,6 @@ begin
 	  $6281 : result := Char($7C);
 	  $7081 : result := Char($7D);
 	  $6081 : result := Char($7E);
-	  $0000 : result := Char($00);
 	  $0081 : result := Char($20); //bug fix for faulty PS2 Save Builder made/edited icon.sys files
     	  $3F82 : result := char($20); //bug fix for faulty mcIconSysGen made
     	  $3F81 : result := char($20); //bug fix
